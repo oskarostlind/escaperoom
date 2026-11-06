@@ -29,6 +29,13 @@ type StatusFilter = "all" | "klar" | "ongoing" | "notstarted";
 
 export default function AdminPage() {
   const [tab, setTab] = useState<Tab>("escaperoom");
+  const [confirmTeamId, setConfirmTeamId] = useState<string | null>(null);
+
+  async function removeTeam(id: string) {
+    await fetch(`/api/admin/teams?id=${encodeURIComponent(id)}`, { method: "DELETE" });
+    setConfirmTeamId(null);
+    load();
+  }
   const [data, setData] = useState<OverviewResp | null>(null);
   const [filter, setFilter] = useState("");
   const [sortKey, setSortKey] = useState<keyof TeamRow>("createdAt");
@@ -408,6 +415,7 @@ export default function AdminPage() {
                 <th>Gåtor (ordning)</th>
                 <th>Felgissn.</th>
                 <th>Resultat</th>
+                <th></th>
               </tr>
             </thead>
 
@@ -454,6 +462,26 @@ export default function AdminPage() {
                     <td className="text-xs opacity-80 whitespace-nowrap">{t.clueOrder || "—"}</td>
                     <td>{t.wrongGuesses}</td>
                     <td>{result}</td>
+                    <td className="text-right whitespace-nowrap">
+                      {confirmTeamId === t.id ? (
+                        <span className="inline-flex gap-1">
+                          <button onClick={() => removeTeam(t.id)} className="rounded border border-red-500/50 px-2 py-1 text-xs text-red-300">
+                            Ta bort
+                          </button>
+                          <button onClick={() => setConfirmTeamId(null)} className="rounded border border-white/10 px-2 py-1 text-xs">
+                            Avbryt
+                          </button>
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => setConfirmTeamId(t.id)}
+                          className="rounded border border-white/10 px-2 py-1 text-xs opacity-70 hover:opacity-100"
+                          title="Ta bort laget och dess svar"
+                        >
+                          Ta bort
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
