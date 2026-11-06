@@ -4,11 +4,25 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { TidAudio } from "./audio";
 
-type State = "setup" | "ready" | "running" | "saving" | "result";
+type State = "setup" | "ready" | "running" | "saving" | "result" | "unsaved";
 type Result = { teamName: string; elapsedMs: number; diffMs: number; targetSec: number };
 type BoardRow = { teamName: string; diffMs: number };
 
 const TARGET_SEC = 60;
+
+/** fetch med omförsök (nätet på laptopen kan hacka – VPN/wifi). */
+async function fetchRetry(input: RequestInfo, init: RequestInit, attempts = 4): Promise<Response> {
+  let lastErr: unknown;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fetch(input, { ...init, cache: "no-store" });
+    } catch (e) {
+      lastErr = e;
+      await new Promise((r) => setTimeout(r, 700 * Math.pow(2, i)));
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("Nätverksfel");
+}
 const MIN_RUN_MS = 1000; // skydd mot dubbeltryck direkt efter start
 
 const WORDS = ["3", "7", "12", "42", "99", "18", "25", "60", "nu!", "snart", "vänta", "stopp?", "⏳", "5", "8", "51", "33", "59", "61", "halvvägs"];
@@ -24,10 +38,12 @@ export default function TidClient() {
   const [err, setErr] = useState<string | null>(null);
   const [result, setResult] = useState<Result | null>(null);
   const [board, setBoard] = useState<BoardRow[]>([]);
+  const [pending, setPending] = useState<{ elapsedMs: number } | null>(null); // osparat resultat vid nätfel
 
   const stateRef = useRef<State>("setup");
   const startTsRef = useRef(0);
   const runIdRef = useRef<Promise<string> | null>(null);
+  const registerRef = useRef<(() => Promise<string>) | null>(null);
   const audioRef = useRef<TidAudio | null>(null);
   const distRef = useRef<HTMLDivElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
@@ -65,20 +81,23 @@ export default function TidClient() {
     try { audioRef.current.start(); } catch {}
     startDistraction();
 
-    runIdRef.current = (async () => {
-      const res = await fetch("/api/tid/start", {
+    const register = async (): Promise<string> => {
+      const res = await fetchRetry("/api/tid/start", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ teamName: teamName.trim(), participants: participants.trim() || null }),
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 409) throw Object.assign(new Error(data?.error || "Laget har redan kört."), { fatal: true });
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Kunde inte starta rundan.");
       return data.runId as string;
-    })();
+    };
+    registerRef.current = register;
+    runIdRef.current = register();
 
-    // Om registreringen misslyckas (t.ex. laget har redan kört) – avbryt direkt.
+    // Bara "laget har redan kört" avbryter rundan. Nätfel ignoreras här – vi försöker igen vid stopp.
     runIdRef.current.catch((e: any) => {
-      if (stateRef.current !== "running") return;
+      if (!e?.fatal || stateRef.current !== "running") return;
       abortRun();
       setErr(e?.message || "Kunde inte starta rundan.");
       go("setup");
@@ -94,16 +113,31 @@ export default function TidClient() {
     const elapsedMs = performance.now() - startTsRef.current;
     if (elapsedMs < MIN_RUN_MS) return;
     abortRun();
+    await saveResult(Math.round(elapsedMs));
+  }
+
+  /** Sparar resultatet; vid nätfel behålls tiden lokalt och en "försök igen"-knapp visas. */
+  async function saveResult(elapsedMs: number) {
     go("saving");
+    setErr(null);
     try {
-      const runId = await runIdRef.current!;
-      const res = await fetch("/api/tid/finish", {
+      let runId: string;
+      try {
+        runId = await runIdRef.current!;
+      } catch (e: any) {
+        if (e?.fatal) throw e;
+        // registreringen misslyckades p.g.a. nät – försök registrera igen nu
+        runIdRef.current = registerRef.current!();
+        runId = await runIdRef.current;
+      }
+      const res = await fetchRetry("/api/tid/finish", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ runId, elapsedMs: Math.round(elapsedMs) }),
+        body: JSON.stringify({ runId, elapsedMs }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok || !data?.ok) throw new Error(data?.error || "Kunde inte spara resultatet.");
+      setPending(null);
       setResult({
         teamName: data.run.teamName,
         elapsedMs: data.run.elapsedMs,
@@ -113,8 +147,16 @@ export default function TidClient() {
       go("result");
       loadBoard();
     } catch (e: any) {
-      setErr(e?.message || "Något gick fel när resultatet skulle sparas.");
-      go("setup");
+      if (e?.fatal) {
+        setPending(null);
+        setErr(e.message);
+        go("setup");
+        return;
+      }
+      // Nätet är nere – tappa inte tiden
+      setPending({ elapsedMs });
+      setErr("Nätverksfel – resultatet (" + (elapsedMs / 1000).toFixed(2) + " s) är INTE sparat än. Kolla wifi/VPN och tryck Försök igen.");
+      go("unsaved");
     }
   }
 
@@ -136,13 +178,14 @@ export default function TidClient() {
       }
       if (e.key === "Enter") {
         if (s === "result") { e.preventDefault(); nextTeam(); }
+        if (s === "unsaved" && pending) { e.preventDefault(); saveResult(pending.elapsedMs); }
       }
       if (e.key === "Escape" && s === "ready") go("setup");
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [teamName, participants]);
+  }, [teamName, participants, pending]);
 
   // ---------- visuella störningar (nivå: kaos) ----------
   function startDistraction() {
@@ -308,6 +351,16 @@ export default function TidClient() {
             {state === "ready" && (
               <button className="btn ghost" onClick={startRun} style={{ marginTop: 18 }}>Starta med knapp i stället</button>
             )}
+          </div>
+        )}
+
+        {state === "unsaved" && pending && (
+          <div className="card">
+            <p className="sub" style={{ marginBottom: 10 }}>{teamName.trim()} – mål {TARGET_SEC} s</p>
+            <div className="diff mid">{(pending.elapsedMs / 1000).toFixed(2)} s</div>
+            <div className="err">{err}</div>
+            <button className="btn" onClick={() => saveResult(pending.elapsedMs)} style={{ marginTop: 24 }}>Försök spara igen</button>
+            <p className="hint"><kbd>Enter</kbd> = försök igen · Tiden ligger kvar här tills den är sparad.</p>
           </div>
         )}
 
