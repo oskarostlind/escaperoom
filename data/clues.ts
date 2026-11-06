@@ -28,7 +28,7 @@ export const CLUES: ClueConfig[] = [
     id: "prime",
     title: "Primtalet",
     icon: "🔢",
-    riddle: "Ledtråden finns gömd bakom ett primtal.\n2, 3, 5, 7, 11, 13, 17",
+    riddle: "Ledtråden finns gömd bakom det primtal som saknas.\n2, 3, 5, 11, 13, 17",
     type: "digit",
     expected: "2",
     active: true,
