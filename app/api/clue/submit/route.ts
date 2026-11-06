@@ -8,7 +8,6 @@ import { teams, submissions } from "@/lib/schema";
 const WRONG_PENALTY_SEC = 30;
 const COOLDOWN_MS = 3000;
 const DEFAULT_CLUE_SECONDS = 5 * 60;
-const QUESTIONS_PER_TEAM = 4;
 
 async function getClues(): Promise<any[]> {
   const mod: any = await import("../../../../data/clues");
@@ -31,8 +30,8 @@ export async function POST(req: Request) {
     const active = ALL.filter((c) => !!c?.active);
 
     let orderIds: number[] = Array.isArray(team.orderIds) ? (team.orderIds as number[]) : [];
-    if (orderIds.length !== QUESTIONS_PER_TEAM || orderIds.some((x) => typeof x !== "number")) {
-      orderIds = Array.from({ length: Math.min(QUESTIONS_PER_TEAM, active.length) }, (_, i) => i);
+    if (orderIds.length === 0 || orderIds.some((x) => typeof x !== "number")) {
+      orderIds = Array.from({ length: active.length }, (_, i) => i);
       await db.update(teams).set({ orderIds }).where(eq(teams.id, teamId));
     }
 

@@ -5,8 +5,9 @@ export const fetchCache = "force-no-store";
 
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { teams, submissions, contentClues } from "@/lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { teams, submissions } from "@/lib/schema";
+import { desc } from "drizzle-orm";
+import { CLUES } from "@/data/clues";
 
 const ROUND_DURATION_SEC = 5 * 60; // 300 sekunder
 
@@ -44,11 +45,7 @@ export async function GET() {
       }
     }
 
-    const activeClues = await db
-      .select()
-      .from(contentClues)
-      .where(eq(contentClues.active, true));
-    const totalClues = activeClues.length;
+    const totalClues = CLUES.filter((c) => c.active !== false).length;
 
     const teamsOut = teamRows.map((t) => {
       const startedAt = t.startedAt as Date | null;

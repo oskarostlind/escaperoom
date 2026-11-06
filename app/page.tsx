@@ -52,7 +52,7 @@ export default function Home() {
         <div>
           <div className="badge">Halloween Escaperoom</div>
           <h1>Vågar ni gå in?</h1>
-          <div className="note">5 minuter. 4 siffror. Noll nåd.</div>
+          <div className="note">5 minuter. En siffra per gåta. Noll nåd.</div>
         </div>
       </div>
 

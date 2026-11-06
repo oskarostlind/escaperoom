@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import TidAdmin from "./TidAdmin";
+
+type Tab = "escaperoom" | "tid";
 
 type TeamRow = {
   id: string;
@@ -24,6 +27,7 @@ type DatePreset = "all" | "today" | "yesterday" | "7d" | "thisweek" | "30d" | "c
 type StatusFilter = "all" | "klar" | "ongoing" | "notstarted";
 
 export default function AdminPage() {
+  const [tab, setTab] = useState<Tab>("escaperoom");
   const [data, setData] = useState<OverviewResp | null>(null);
   const [filter, setFilter] = useState("");
   const [sortKey, setSortKey] = useState<keyof TeamRow>("createdAt");
@@ -181,6 +185,18 @@ export default function AdminPage() {
     return arr;
   }, [data, filter, sortKey, sortDir, datePreset, rangeStart, rangeEnd, statusFilter]);
 
+  // Pallen: klara lag med mest tid kvar först; därefter ej klara efter antal lösta gåtor
+  const escapeRanking = useMemo(() => {
+    if (!data) return [];
+    const done = data.teams
+      .filter((t) => t.completedAt)
+      .sort((a, b) => (b.timeLeftAtFinishSec ?? 0) - (a.timeLeftAtFinishSec ?? 0) || a.wrongGuesses - b.wrongGuesses);
+    const rest = data.teams
+      .filter((t) => !t.completedAt && t.startedAt)
+      .sort((a, b) => (b.step ?? 0) - (a.step ?? 0) || a.wrongGuesses - b.wrongGuesses);
+    return [...done, ...rest];
+  }, [data]);
+
   // om presetet byts från custom -> nolla custom-fält för tydlighet
   useEffect(() => {
     if (datePreset !== "custom") {
@@ -191,8 +207,24 @@ export default function AdminPage() {
 
   return (
     <main className="min-h-screen p-6 space-y-8">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-bold">Admin</h1>
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <h1 className="text-2xl font-bold">Admin</h1>
+          <div className="inline-flex rounded-lg border border-white/10 overflow-hidden text-sm">
+            <button
+              onClick={() => setTab("escaperoom")}
+              className={"px-4 py-2 " + (tab === "escaperoom" ? "bg-white/15 font-semibold" : "bg-neutral-900 opacity-70")}
+            >
+              🎃 Escaperoom
+            </button>
+            <button
+              onClick={() => { setTab("tid"); }}
+              className={"px-4 py-2 " + (tab === "tid" ? "bg-white/15 font-semibold" : "bg-neutral-900 opacity-70")}
+            >
+              ⏱️ Tidsspelet
+            </button>
+          </div>
+        </div>
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -206,6 +238,35 @@ export default function AdminPage() {
           </button>
         </form>
       </div>
+
+      {tab === "tid" && <TidAdmin />}
+
+      {tab === "escaperoom" && (
+      <>
+      {/* Pallen */}
+      <section className="rounded-xl border border-white/10 bg-black/20 p-4">
+        <h2 className="mb-3 text-lg font-semibold">🏆 Pallen – Escaperoom (mest tid kvar vinner)</h2>
+        {escapeRanking.filter((t) => t.completedAt).length === 0 ? (
+          <div className="text-sm opacity-60">Inget lag har gått i mål ännu.</div>
+        ) : (
+          <div className="grid gap-3 md:grid-cols-3">
+            {escapeRanking.filter((t) => t.completedAt).slice(0, 3).map((t, i) => (
+              <div
+                key={t.id}
+                className="rounded-lg border p-3"
+                style={{ borderColor: i === 0 ? "rgba(245,200,66,.6)" : "rgba(255,255,255,.1)" }}
+              >
+                <div className="text-2xl">{["🥇", "🥈", "🥉"][i]}</div>
+                <div className="font-bold text-lg">{t.teamName}</div>
+                <div className="text-sm opacity-80">
+                  {fmtSecs(t.timeLeftAtFinishSec)} kvar · {t.wrongGuesses} fel
+                </div>
+                {t.participants && <div className="text-xs opacity-60 mt-1">{t.participants}</div>}
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       {/* Filter & sort */}
       <section className="rounded-xl border border-white/10 bg-black/20 p-4">
@@ -425,6 +486,8 @@ export default function AdminPage() {
             })}
         </div>
       </section>
+      </>
+      )}
     </main>
   );
 }

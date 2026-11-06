@@ -1,8 +1,9 @@
 // app/api/team/start/route.ts
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { teams, contentClues } from "@/lib/schema";
-import { asc, eq } from "drizzle-orm";
+import { teams } from "@/lib/schema";
+import { eq, sql } from "drizzle-orm";
+import { CLUES } from "@/data/clues";
 
 /**
  * Skapar ett nytt lag och startar en runda.
@@ -28,7 +29,7 @@ export async function POST(req: Request) {
     const existing = await db
       .select({ id: teams.id })
       .from(teams)
-      .where(eq(teams.teamName, teamName))
+      .where(sql`lower(${teams.teamName}) = lower(${teamName})`)
       .limit(1);
 
     if (existing.length > 0) {
@@ -38,13 +39,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Bygg ordning (enkel: index 0..N-1 baserat på aktiva ledtrådar)
-    const activeClues = await db
-      .select({ id: contentClues.id })
-      .from(contentClues)
-      .where(eq(contentClues.active, true))
-      .orderBy(asc(contentClues.id));
-
+    // Bygg ordning: index 0..N-1 över alla aktiva gåtor i data/clues.ts
+    const activeClues = CLUES.filter((c) => c.active !== false);
+    if (activeClues.length === 0) {
+      return NextResponse.json({ ok: false, error: "Inga gåtor är aktiva ännu." }, { status: 400 });
+    }
     const orderIds = Array.from({ length: activeClues.length }, (_, i) => i);
     const now = new Date();
 

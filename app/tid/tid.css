@@ -1,0 +1,97 @@
+/* Tidsspelet – egen stil, oberoende av escaperoomets tema */
+.tid {
+  --bg: #0e1116;
+  --panel: #161b22;
+  --ink: #f2f5f8;
+  --muted: #9aa7b4;
+  --accent: #f5c842; /* glitter-guld */
+  --accent2: #38bdf8;
+  --warn: #f87171;
+  --line: #232a33;
+
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+.tid-loading { padding: 40px; color: #9aa7b4; }
+
+.tid .distraction { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
+.tid .wrap { position: relative; z-index: 3; height: 100%; display: flex; align-items: center; justify-content: center; padding: 24px; }
+.tid .card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 22px;
+  padding: 40px; width: min(760px, 94vw); text-align: center; box-shadow: 0 30px 80px rgba(0,0,0,.45);
+}
+.tid.running .card { background: transparent; border-color: transparent; box-shadow: none; }
+.tid h1 { font-size: clamp(28px, 5vw, 46px); letter-spacing: -.02em; margin: 0 0 6px; }
+.tid .sub { color: var(--muted); font-size: clamp(14px, 2.2vw, 18px); margin: 0 0 24px; line-height: 1.5; }
+.tid label { display: block; text-align: left; color: var(--muted); font-size: 14px; margin: 18px 0 8px; font-weight: 600; }
+.tid input[type=text] {
+  width: 100%; padding: 16px 18px; font-size: 20px; border-radius: 14px; box-sizing: border-box;
+  border: 1px solid var(--line); background: #0b0e13; color: var(--ink); outline: none;
+}
+.tid input[type=text]:focus { border-color: var(--accent2); }
+.tid .btn {
+  margin-top: 26px; width: 100%; padding: 20px; font-size: 22px; font-weight: 800; cursor: pointer;
+  border: none; border-radius: 16px; background: var(--accent); color: #2a1f00; transition: .12s;
+}
+.tid .btn:hover { filter: brightness(1.07); }
+.tid .btn:disabled { opacity: .6; cursor: default; }
+.tid .btn.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+.tid .hint { margin: 16px 0 0; color: var(--muted); font-size: 15px; }
+.tid .err { margin-top: 14px; color: var(--warn); font-weight: 700; }
+.tid kbd {
+  background: #0b0e13; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 7px;
+  padding: 2px 10px; font-size: .9em; font-weight: 700;
+}
+.tid .rules { text-align: left; color: var(--muted); font-size: 15px; line-height: 1.6; margin: 0 0 8px; padding-left: 20px; }
+
+/* play */
+.tid .big { font-size: clamp(40px, 10vw, 90px); font-weight: 900; letter-spacing: -.03em; line-height: 1.05; margin-top: 14px; }
+.tid .playmsg { font-size: clamp(22px, 4vw, 34px); font-weight: 800; }
+.tid.running .playmsg { opacity: .55; }
+.tid.running .big { display: none; }
+.tid .target-pill {
+  display: inline-block; margin-top: 14px; padding: 8px 18px; border-radius: 999px; background: #0b0e13;
+  border: 1px solid var(--line); color: var(--accent); font-weight: 800; font-size: 20px;
+}
+
+/* distraktioner */
+.tid .faketimer {
+  font-variant-numeric: tabular-nums; font-weight: 900; letter-spacing: -.02em;
+  position: absolute; left: 50%; top: 9%; transform: translateX(-50%);
+  font-size: clamp(90px, 22vw, 240px); color: rgba(248,113,113,.9);
+  text-shadow: 0 0 40px rgba(248,113,113,.35);
+}
+.tid .faketimer.alt { color: rgba(245,200,66,.9); text-shadow: 0 0 40px rgba(245,200,66,.35); }
+.tid .floater { position: absolute; font-weight: 900; opacity: 0; will-change: transform; }
+.tid .pulse { position: absolute; inset: 0; background: radial-gradient(circle at 50% 50%, rgba(56,189,248,.22), transparent 62%); opacity: 0; }
+.tid .flash { position: absolute; inset: 0; background: rgba(255,255,255,.0); transition: background .08s; }
+.tid .shout {
+  position: absolute; left: 50%; top: 58%; transform: translate(-50%, -50%) rotate(-6deg);
+  font-size: clamp(60px, 14vw, 160px); font-weight: 900; color: var(--accent); opacity: 0;
+  text-shadow: 0 0 40px rgba(245,200,66,.5);
+}
+
+/* resultat */
+.tid .diff { font-size: clamp(44px, 11vw, 96px); font-weight: 900; letter-spacing: -.03em; }
+.tid .good { color: #4ade80; } .tid .mid { color: var(--accent2); } .tid .bad { color: var(--warn); }
+.tid .statline { color: var(--muted); font-size: 18px; margin-top: 8px; }
+.tid .foot { margin-top: 18px; color: var(--muted); font-size: 13px; }
+
+/* topplista (bara med ?board=1) */
+.tid .board {
+  position: absolute; top: 16px; right: 16px; z-index: 4; width: 280px; background: var(--panel);
+  border: 1px solid var(--line); border-radius: 16px; padding: 14px 14px 10px; max-height: 88vh; overflow: auto;
+}
+.tid .board h3 { font-size: 14px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin: 0 0 10px; }
+.tid .lbrow { display: flex; justify-content: space-between; gap: 8px; padding: 9px 8px; border-radius: 10px; font-size: 15px; }
+.tid .lbrow:nth-child(odd) { background: #0b0e13; }
+.tid .lbname { font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tid .lbdiff { color: var(--muted); font-variant-numeric: tabular-nums; flex: none; }
+.tid .rank1 .lbname { color: var(--accent); } .tid .rank2 .lbname { color: var(--accent2); }
+
+.tid .corner { position: absolute; left: 16px; bottom: 12px; z-index: 4; font-size: 12px; color: #4b5563; }

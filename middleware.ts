@@ -7,12 +7,17 @@ const COOKIE_NAME = process.env.ADMIN_COOKIE_NAME || "adm";
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  if (!pathname.startsWith(ADMIN_PATH)) return NextResponse.next(); // allt annat tillåts
+  const isApi = pathname.startsWith("/api/admin");
+  if (!pathname.startsWith(ADMIN_PATH) && !isApi) return NextResponse.next(); // allt annat tillåts
 
-  // /admin/login ska vara åtkomlig utan cookie
-  if (pathname === LOGIN_PATH) return NextResponse.next();
+  // /admin/login och /api/admin/login ska vara åtkomliga utan cookie
+  if (pathname === LOGIN_PATH || pathname === "/api/admin/login") return NextResponse.next();
 
   const cookie = req.cookies.get(COOKIE_NAME)?.value;
+
+  if (!cookie && isApi) {
+    return NextResponse.json({ ok: false, error: "Ej inloggad" }, { status: 401 });
+  }
 
   if (!cookie) {
     const url = req.nextUrl.clone();
@@ -26,5 +31,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/api/admin/:path*"],
 };

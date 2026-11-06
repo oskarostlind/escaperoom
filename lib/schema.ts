@@ -74,3 +74,20 @@ export const contentClues = pgTable(
 
 
 
+
+/**
+ * Tidsspelet – ett försök per lag. Laget startar/stoppar klockan med mellanslag
+ * utan att se tiden; närmast 60 s vinner.
+ */
+export const timeRuns = pgTable("time_runs", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  teamName: text("team_name").notNull(),
+  teamKey: text("team_key").notNull().unique(), // normaliserat lagnamn (lowercase, trimmat)
+  participants: text("participants"),
+  targetSec: integer("target_sec").notNull().default(60),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+  elapsedMs: integer("elapsed_ms"),
+  diffMs: integer("diff_ms"), // elapsed - target (positivt = för sent)
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});

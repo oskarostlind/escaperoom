@@ -51,9 +51,10 @@ export async function GET(req: Request) {
     }
 
     // === OM SPELET PÅGÅR ===
-    const orderIds: number[] = Array.isArray(team.orderIds)
-      ? (team.orderIds as number[])
-      : Array.from({ length: total }, (_, i) => i);
+    const orderIds: number[] =
+      Array.isArray(team.orderIds) && (team.orderIds as number[]).length > 0
+        ? (team.orderIds as number[])
+        : Array.from({ length: total }, (_, i) => i);
 
     const step = Math.max(0, Math.min(Number(team.step ?? 0), Math.max(total - 1, 0)));
     const clueIdx = orderIds[step] ?? -1;
