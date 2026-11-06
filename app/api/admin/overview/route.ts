@@ -7,7 +7,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { teams, submissions } from "@/lib/schema";
 import { desc } from "drizzle-orm";
-import { CLUES } from "@/data/clues";
+import { CLUES, PICK_COUNT } from "@/data/clues";
+import { resolveClue } from "@/lib/order";
 
 const ROUND_DURATION_SEC = 5 * 60; // 300 sekunder
 
@@ -45,7 +46,8 @@ export async function GET() {
       }
     }
 
-    const totalClues = CLUES.filter((c) => c.active !== false).length;
+    const active = CLUES.filter((c) => c.active !== false);
+    const defaultTotal = Math.min(PICK_COUNT, active.filter((c) => !c.final).length) + active.filter((c) => c.final).length;
 
     const teamsOut = teamRows.map((t) => {
       const startedAt = t.startedAt as Date | null;
@@ -72,9 +74,14 @@ export async function GET() {
         timeLeftAtFinishSec = Math.max(0, ROUND_DURATION_SEC - actualDurationSec);
       }
 
+      const order = Array.isArray(t.orderIds) ? (t.orderIds as unknown[]) : [];
+      const totalClues = order.length > 0 ? order.length : defaultTotal;
+      const clueOrder = order.map((e) => resolveClue(e, active)?.title ?? "?").join(" → ");
+
       return {
         id: t.id,
         teamName: t.teamName,
+        clueOrder,
         participants: t.participants ?? null,
         createdAt: (t.createdAt as Date | undefined)?.toISOString?.() ?? null,
         startedAt: startedAt?.toISOString?.() ?? null,

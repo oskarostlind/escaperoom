@@ -8,67 +8,79 @@ export type ClueConfig = {
   expected: string;        // "3" eller "7214" etc (endast siffror)
   durationSec?: number;    // valfritt: tid för denna ledtråd (default 5*60)
   active?: boolean;        // enkel on/off
+  final?: boolean;         // true = fast sista fråga som ALLA lag får
 };
+
+/**
+ * Så funkar urvalet (se lib/order.ts):
+ *  - Varje lag får PICK_COUNT gåtor slumpade ur potten (alla aktiva utan `final`),
+ *    i slumpad ordning, och därefter sistafrågan (`final: true`).
+ *  - Inga två lag får samma ordning (så länge det finns kombinationer kvar:
+ *    5 gåtor i potten ger 5·4·3 = 60 unika ordningar).
+ *
+ * Lägg till gåtor längst ner. Sätt active: false för att dölja en gåta.
+ */
+export const PICK_COUNT = 3;
 
 // **** Här styr du allt ****
 export const CLUES: ClueConfig[] = [
   {
-    id: "clue_sauna",
-    title: "Bastu",
-    icon: "🜂",
-    riddle:
-      "Där luften står still men andetagen blir tunga,\nOch sten möter eld i en viskande lunga.\nNär ångan stiger avslöjar jag mitt svar,\n Det kanske blir svettigt, vem vågar ta ansvar?.",
+    id: "prime",
+    title: "Primtalet",
+    icon: "🔢",
+    riddle: "Ledtråden finns gömd bakom ett primtal.\n2, 3, 5, 7, 11, 13, 17",
     type: "digit",
-    expected: "3",
-    durationSec: 5 * 60,
-    active: true,
-  },
-  {
-    id: "clue_lock",
-    title: "Hänglås",
-    icon: "🔒",
-    riddle:
-      "Skåp sju vaktar hemligheten väl,\nTvå skuggor dansar runt andens själ,\nEn viskning hörs från stenarnas famn,\nOm fyra lågornas tysta namn.",
-    // Exempel på flersiffrig kod:
-    type: "code",
-    expected: "6",
-    durationSec: 5 * 60,
-    active: true,
-  },
-    {
-    id: "clue_medicinecabinet",
-    title: "Medicinskåp", 
-    icon: "🚑" ,
-    riddle:
-    "Du söker en ledtråd, men vart ska du gå? \nKanske där vården har haft något på \n Är man klantig kan man tappa ett klot, \n Kanske nästa ledtråd kan linda din fot.",
-    type: "code",
-    expected: "9", 
-    durationSec: 5 * 60,
-    active: true,
-  },
-  {
-    id: "clue_toiletpaper",
-    title: "Toalettpapper",
-    icon: "🧻",
-    riddle:
-      "Rullar av vitt, en mjuk spiral,\nI badrummets vrå, en tyst ritual.\nNär nöden kallar, där den finns,\nSök där pappret i cirklar spinns.",
-    type: "code",
     expected: "2",
-    durationSec: 5 * 60,
     active: true,
   },
   {
-    id: "math_clue",
-    title: "Mattegåta",
-    icon: "➗",
-    riddle:
-    "Dags för en mattefråga, svaret på denna ger er nästa siffra i koden \n (8+4) / 3-1 = ?",  
-    type: "code",
-    expected: "3",
-    durationSec: 5 * 60,
+    id: "sequence",
+    title: "Talföljden",
+    icon: "📉",
+    riddle: "20, 19, 17, 14, 10, ?",
+    type: "digit",
+    expected: "5",
     active: true,
   },
-  // Lägg till fler ledtrådar här – bara följ mallen
+  {
+    id: "dirty",
+    title: "Skitiga ställen",
+    icon: "🧹",
+    riddle: "Ibland finns koden på de mest skitiga ställena.\nTitta inte ovanpå – lyft och titta i.",
+    type: "digit",
+    expected: "7",
+    active: true,
+  },
+  {
+    id: "sauna",
+    title: "Bastun",
+    icon: "🔥",
+    riddle: "Leta i en varm bastu – gåtan leder dit.",
+    type: "digit",
+    expected: "4",
+    active: true,
+  },
+  {
+    id: "oddball",
+    title: "Den udda bollen",
+    icon: "🎱",
+    riddle: "Hitta den udda bollen.",
+    type: "digit",
+    expected: "6",
+    active: true,
+  },
+
+  // ---- Fast sista fråga – alla lag får denna sist ----
+  {
+    id: "door",
+    title: "Dörren",
+    icon: "🚪",
+    riddle: "Vilket nummer stod på dörren?",
+    type: "digit",
+    expected: "2",
+    active: true,
+    final: true,
+  },
 ];
 
 // Standardtid om durationSec inte är satt

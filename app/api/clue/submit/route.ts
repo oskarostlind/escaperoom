@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { teams, submissions } from "@/lib/schema";
+import { buildOrder, resolveClue } from "@/lib/order";
 
 const WRONG_PENALTY_SEC = 30;
 const COOLDOWN_MS = 3000;
@@ -29,16 +30,16 @@ export async function POST(req: Request) {
     const ALL = await getClues();
     const active = ALL.filter((c) => !!c?.active);
 
-    let orderIds: number[] = Array.isArray(team.orderIds) ? (team.orderIds as number[]) : [];
-    if (orderIds.length === 0 || orderIds.some((x) => typeof x !== "number")) {
-      orderIds = Array.from({ length: active.length }, (_, i) => i);
+    let orderIds: string[] = Array.isArray(team.orderIds) ? (team.orderIds as string[]) : [];
+    if (orderIds.length === 0) {
+      const others = await db.select({ orderIds: teams.orderIds }).from(teams);
+      orderIds = buildOrder(others.map((t) => (Array.isArray(t.orderIds) ? (t.orderIds as unknown[]) : [])));
       await db.update(teams).set({ orderIds }).where(eq(teams.id, teamId));
     }
 
     const total = orderIds.length;
     const step = Math.max(0, Math.min(Number(team.step ?? 0), Math.max(total - 1, 0)));
-    const clueIdx = orderIds[step] ?? -1;
-    const current = clueIdx >= 0 && clueIdx < active.length ? active[clueIdx] : undefined;
+    const current = resolveClue(orderIds[step], active);
     if (!current) return NextResponse.json({ ok: false, error: "No current clue" }, { status: 400 });
 
     const type = current?.type === "code" ? "code" : "digit";

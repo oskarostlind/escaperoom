@@ -14,6 +14,7 @@ type TeamRow = {
   completedAt?: string | null;
   step?: number | null;
   totalClues?: number | null;
+  clueOrder?: string;
   wrongGuesses: number;
   timeLeftAtFinishSec?: number | null;
 };
@@ -404,6 +405,7 @@ export default function AdminPage() {
                 <th>Start</th>
                 <th>Tid kvar när klar</th>
                 <th>Steg</th>
+                <th>Gåtor (ordning)</th>
                 <th>Felgissn.</th>
                 <th>Resultat</th>
               </tr>
@@ -449,6 +451,7 @@ export default function AdminPage() {
                     <td>
                       {t.step ?? 0}/{t.totalClues ?? "?"}
                     </td>
+                    <td className="text-xs opacity-80 whitespace-nowrap">{t.clueOrder || "—"}</td>
                     <td>{t.wrongGuesses}</td>
                     <td>{result}</td>
                   </tr>

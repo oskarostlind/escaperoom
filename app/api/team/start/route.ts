@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { teams } from "@/lib/schema";
 import { eq, sql } from "drizzle-orm";
-import { CLUES } from "@/data/clues";
+import { activeClues, buildOrder } from "@/lib/order";
 
 /**
  * Skapar ett nytt lag och startar en runda.
@@ -39,12 +39,12 @@ export async function POST(req: Request) {
       );
     }
 
-    // Bygg ordning: index 0..N-1 över alla aktiva gåtor i data/clues.ts
-    const activeClues = CLUES.filter((c) => c.active !== false);
-    if (activeClues.length === 0) {
+    // Bygg ordning: 3 slumpade ur potten + fast sistafråga, unik mot andra lag
+    if (activeClues().length === 0) {
       return NextResponse.json({ ok: false, error: "Inga gåtor är aktiva ännu." }, { status: 400 });
     }
-    const orderIds = Array.from({ length: activeClues.length }, (_, i) => i);
+    const others = await db.select({ orderIds: teams.orderIds }).from(teams);
+    const orderIds = buildOrder(others.map((t) => (Array.isArray(t.orderIds) ? (t.orderIds as unknown[]) : [])));
     const now = new Date();
 
     const inserted = await db

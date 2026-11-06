@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { teams, submissions } from "@/lib/schema";
+import { resolveClue } from "@/lib/order";
 
 const DEFAULT_CLUE_SECONDS = 5 * 60;
 
@@ -31,7 +32,11 @@ export async function GET(req: Request) {
 
     const ALL = await getClues();
     const active = ALL.filter((c) => !!c?.active);
-    const total = active.length;
+    const orderIds: unknown[] =
+      Array.isArray(team.orderIds) && (team.orderIds as unknown[]).length > 0
+        ? (team.orderIds as unknown[])
+        : active.map((c: any) => c.id);
+    const total = orderIds.length;
 
     // === OM SPELET ÄR KLART ===
     if (team.completedAt && team.startedAt) {
@@ -51,14 +56,8 @@ export async function GET(req: Request) {
     }
 
     // === OM SPELET PÅGÅR ===
-    const orderIds: number[] =
-      Array.isArray(team.orderIds) && (team.orderIds as number[]).length > 0
-        ? (team.orderIds as number[])
-        : Array.from({ length: total }, (_, i) => i);
-
     const step = Math.max(0, Math.min(Number(team.step ?? 0), Math.max(total - 1, 0)));
-    const clueIdx = orderIds[step] ?? -1;
-    const current = clueIdx >= 0 && clueIdx < active.length ? active[clueIdx] : undefined;
+    const current = resolveClue(orderIds[step], active);
 
     if (!current) {
       return NextResponse.json({ ok: false, error: "No current clue" }, { status: 400 });
@@ -78,7 +77,7 @@ export async function GET(req: Request) {
       finished: false,
       team: { id: team.id, step, total },
       clue: {
-        id: current.id ?? String(clueIdx),
+        id: current.id ?? String(step),
         title: current.title ?? "",
         icon: current.icon ?? "",
         riddle: current.riddle ?? "",

@@ -19,7 +19,7 @@ export const teams = pgTable("teams", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   startedAt: timestamp("started_at", { withTimezone: true }),
   step: smallint("step").notNull().default(0),
-  orderIds: smallint("order_ids").array().notNull().default(sql`ARRAY[]::SMALLINT[]`),
+  orderIds: text("order_ids").array().notNull().default(sql`ARRAY[]::TEXT[]`), // gåte-id:n i spelordning
   penaltiesSec: integer("penalties_sec").notNull().default(0),
   lockedUntil: timestamp("locked_until", { withTimezone: true }),
   lastWrongAt: timestamp("last_wrong_at", { withTimezone: true }),
