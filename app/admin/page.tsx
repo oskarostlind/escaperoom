@@ -215,7 +215,7 @@ export default function AdminPage() {
               onClick={() => setTab("escaperoom")}
               className={"px-4 py-2 " + (tab === "escaperoom" ? "bg-white/15 font-semibold" : "bg-neutral-900 opacity-70")}
             >
-              🎃 Escaperoom
+              ✨ Escaperoom
             </button>
             <button
               onClick={() => { setTab("tid"); }}

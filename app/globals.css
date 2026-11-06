@@ -3,11 +3,11 @@
 
 
 :root{
-  --bg:#0b0b12;
-  --bg2:#141423;
-  --pumpkin:#ff7a18;
-  --pumpkin-2:#ffae00;
-  --slime:#33ff99;
+  --bg:#0d0a16;
+  --bg2:#1a1030;
+  --pumpkin:#e6b84a;   /* guld (variabelnamnen behålls för kompatibilitet) */
+  --pumpkin-2:#ffd977; /* champagne */
+  --slime:#ff6fb5;     /* glitter-rosa */
   --text:#e9e9f0;
   --muted:#a5a5ba;
   --error:#ff4664;
@@ -22,9 +22,16 @@ body{
   margin:0;
   color:var(--text);
   background:
-    radial-gradient(1200px 600px at 80% -10%, rgba(255,122,24,.12), transparent 60%),
-    radial-gradient(900px 500px at -10% 10%, rgba(51,255,153,.08), transparent 60%),
+    radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,.9), transparent 70%),
+    radial-gradient(2px 2px at 78% 9%, rgba(255,235,170,.9), transparent 70%),
+    radial-gradient(1.5px 1.5px at 35% 62%, rgba(255,255,255,.7), transparent 70%),
+    radial-gradient(2px 2px at 90% 55%, rgba(255,160,220,.8), transparent 70%),
+    radial-gradient(1.5px 1.5px at 55% 85%, rgba(255,235,170,.8), transparent 70%),
+    radial-gradient(2px 2px at 22% 90%, rgba(255,255,255,.6), transparent 70%),
+    radial-gradient(1200px 600px at 80% -10%, rgba(230,184,74,.16), transparent 60%),
+    radial-gradient(900px 500px at -10% 10%, rgba(255,111,181,.12), transparent 60%),
     linear-gradient(180deg, var(--bg), var(--bg2));
+  background-attachment: fixed;
   font: 500 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
 }
 
@@ -40,28 +47,32 @@ h1,h2,h3{ letter-spacing:.5px; margin:0 0 .4rem; }
 @layer components {
   /* Bakgrundsklass som vi använder på <body> i /play */
   .page-bg {
-    background-color: #0b0c11;
+    background-color: #0d0a16;
     background-image:
-      radial-gradient(1200px 600px at 20% -10%, rgba(255,130,30,0.12), transparent 60%),
-      radial-gradient(900px 500px at 90% -10%, rgba(61, 255, 153, .08), transparent 60%),
-      linear-gradient(108deg, rgba(255,161,49,.05), rgba(17,17,17,0));
+      radial-gradient(2px 2px at 12% 18%, rgba(255,255,255,.9), transparent 70%),
+      radial-gradient(2px 2px at 78% 9%, rgba(255,235,170,.9), transparent 70%),
+      radial-gradient(1.5px 1.5px at 35% 62%, rgba(255,255,255,.7), transparent 70%),
+      radial-gradient(2px 2px at 90% 55%, rgba(255,160,220,.8), transparent 70%),
+      radial-gradient(1200px 600px at 20% -10%, rgba(230,184,74,.16), transparent 60%),
+      radial-gradient(900px 500px at 90% -10%, rgba(255,111,181,.10), transparent 60%),
+      linear-gradient(108deg, rgba(230,184,74,.05), rgba(17,17,17,0));
   }
 
   /* Badges */
   .badge {
     @apply inline-flex items-center gap-2 rounded-xl px-3 py-1 text-xs font-semibold select-none;
-    background: rgba(255,122,24,.12);
+    background: rgba(230,184,74,.12);
     color: var(--pumpkin-2);
-    border: 1px solid rgba(255,122,24,.25);
-    text-shadow: 0 0 10px rgba(255,122,24,.3);
+    border: 1px solid rgba(230,184,74,.35);
+    text-shadow: 0 0 10px rgba(255,217,119,.35);
   }
   .badge-pumpkin {
   /* samma som .badge (utilities) + dina färger */
   @apply inline-flex items-center gap-2 rounded-xl px-3 py-1 text-xs font-semibold select-none;
-  background: rgba(255,122,24,.12);
+  background: rgba(230,184,74,.12);
   color: var(--pumpkin-2);
-  border: 1px solid rgba(255,122,24,.25);
-  text-shadow: 0 0 10px rgba(255,122,24,.3);
+  border: 1px solid rgba(230,184,74,.35);
+  text-shadow: 0 0 10px rgba(255,217,119,.35);
 }
 
   /* Kort */
@@ -92,10 +103,10 @@ h1,h2,h3{ letter-spacing:.5px; margin:0 0 .4rem; }
 
   .btn-primary {
     @apply rounded-2xl px-4 py-3 font-semibold text-white transition;
-    border: 1px solid rgba(255,191,0,.4);
-    background: rgba(255,168,64,.25);
+    border: 1px solid rgba(255,217,119,.45);
+    background: rgba(230,184,74,.25);
   }
-  .btn-primary:hover { background: rgba(255,168,64,.35); }
+  .btn-primary:hover { background: rgba(230,184,74,.38); }
   .btn-primary:active { transform: translateY(1px); }
 
   .btn-ghost {
@@ -118,10 +129,10 @@ h1,h2,h3{ letter-spacing:.5px; margin:0 0 .4rem; }
 
   .kbd-primary {
     @apply rounded-2xl py-3 text-xl font-semibold text-white transition;
-    border: 1px solid rgba(16,185,129,.4);
-    background: rgba(5,150,105,.4);
+    border: 1px solid rgba(255,217,119,.5);
+    background: rgba(230,184,74,.35);
   }
-  .kbd-primary:hover { background: rgba(5,150,105,.5); }
+  .kbd-primary:hover { background: rgba(230,184,74,.5); }
   .kbd-primary:active { transform: translateY(1px); }
 
   /* Inputs */
@@ -141,7 +152,7 @@ ul.rules li{ margin: 8px 0; }
 
 .field{ display:flex; flex-direction:column; gap:8px; margin: 14px 0; }
 
-.input:focus{ border-color: var(--pumpkin); box-shadow:0 0 0 3px rgba(255,122,24,.15); }
+.input:focus{ border-color: var(--pumpkin); box-shadow:0 0 0 3px rgba(230,184,74,.18); }
 
 .checkbox{ display:flex; align-items:center; gap:10px; color:var(--muted); user-select:none; }
 
@@ -150,22 +161,22 @@ ul.rules li{ margin: 8px 0; }
 .button{
   appearance:none; border:0; cursor:pointer;
   background: radial-gradient(120% 120% at 10% 10%, var(--pumpkin), var(--pumpkin-2));
-  color:#1a0f00; font-weight:800; padding: 12px 18px; border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(255,122,24,.25);
+  color:#2a1f00; font-weight:800; padding: 12px 18px; border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(230,184,74,.3);
   transition: transform .06s ease, box-shadow .2s ease, filter .2s ease;
 }
 .button:hover{ filter: brightness(1.05); }
-.button:active{ transform: translateY(1px); box-shadow: 0 5px 16px rgba(255,122,24,.2); }
+.button:active{ transform: translateY(1px); box-shadow: 0 5px 16px rgba(230,184,74,.2); }
 .button[disabled]{ filter:grayscale(1); opacity:.6; cursor:not-allowed; }
 
-.ghost{ font-size:28px; filter: drop-shadow(0 0 10px rgba(255,255,255,.25)); }
+.ghost{ font-size:28px; filter: drop-shadow(0 0 12px rgba(255,217,119,.6)); }
 .note{ color: var(--muted); font-size: .95rem; }
 
 .callout{
   margin-top: 16px; padding: 12px 14px;
   border-left: 3px solid var(--slime);
-  background: rgba(51,255,153,.06);
-  border-radius: 8px; color: #c9ffe6;
+  background: rgba(255,111,181,.08);
+  border-radius: 8px; color: #ffd9ec;
 }
 .error{ border-left-color: var(--error); background: rgba(255,70,100,.08); color: #ffd1da; }
 
@@ -209,7 +220,7 @@ main{ padding-bottom: max(env(safe-area-inset-bottom), 0px); }
 
 input:focus, button:focus{
   outline: none;
-  box-shadow: 0 0 0 3px rgba(255,122,24,.15);
+  box-shadow: 0 0 0 3px rgba(230,184,74,.18);
 }
 
 /* Tvinga kompakt keypad på små skärmar */

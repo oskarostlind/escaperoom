@@ -221,8 +221,8 @@ export default function PlayClient() {
       <header className="sticky top-0 z-20 border-b border-white/10 bg-black/40 backdrop-blur">
         <div className="container flex items-center justify-between">
           <div className="hero">
-            <span className="badge">Halloween Escaperoom</span>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Vågar ni gå in?</h1>
+            <span className="badge">Glitter &amp; Glamour</span>
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">Escaperoom</h1>
           </div>
           {!finished && (
             <div className="pill text-2xl font-bold" aria-live="polite">

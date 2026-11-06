@@ -48,10 +48,10 @@ export default function Home() {
   return (
     <main className="container">
       <div className="hero">
-        <span className="ghost">🎃</span>
+        <span className="ghost">✨</span>
         <div>
-          <div className="badge">Halloween Escaperoom</div>
-          <h1>Vågar ni gå in?</h1>
+          <div className="badge">Glitter &amp; Glamour · Varvet 10 år</div>
+          <h1>Hinner ni ut innan festen börjar?</h1>
           <div className="note">5 minuter. En siffra per gåta. Noll nåd.</div>
         </div>
       </div>
@@ -80,7 +80,7 @@ export default function Home() {
             <input
               id="team"
               className="input"
-              placeholder="Ex. Spökjägarna"
+              placeholder="Ex. Glitterbomberna"
               value={teamName}
               onChange={(e) => setTeamName(e.target.value)}
               maxLength={64}
